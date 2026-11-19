@@ -25,7 +25,9 @@ const FLOWS_LEAD = "オーダーの種別ごとに、登録から実施・結果
 const DEV_LEAD =
   "院内の開発者向けに、業務フローの操作ごとに画面・backend・上流の FHIR サーバーの間で何が起きるかを示します。" +
   "運用の流れは[業務フロー](../flows/index.md)を、リソースの要素は[FHIR 実装ガイド](https://ysnr-dev.github.io/fhir-ig/index.html)を読みます。";
-const LINK = /\[([^\]]*)\]\(([^)\s]+)\)/g;
+// リンクと、その直後に「」で並べた節の名前(「[x.md](x.md)「登録の判定」」)。
+const LINK = /\[([^\]]*)\]\(([^)\s]+)\)((?:「[^」]*」)*)/g;
+const QUOTED = /「([^」]*)」/g;
 // 本文の出典の括弧書き。「([設計文書](../x.md))」「([設計文書](../x.md) §1)」。
 const CITATION = /\(\[[^\]]*\]\(\.\.\/[^)]*\)[^()]*\)/g;
 
@@ -36,7 +38,24 @@ const FORBIDDEN = [
   [/`\/[\w-]/, "画面の URL のパス"],
   [/`[A-Z][A-Z0-9]*_[A-Z0-9_]+`/, "テンプレートなどのコード"],
   [/\bseed\b|db:seed/, "seed"],
+  [/(?<![\w`])[A-Z][A-Z0-9]*_[A-Z0-9_]*[A-Z0-9](?![\w`])/, "テンプレートなどのコード"],
+  [/(?<![\w.\/-])[\w-]+\.md(?![\w(])/, "文書のファイル名"],
+  [/バックログ/, "開発の課題の一覧(バックログ)への参照"],
+  [/SS-MIX2|HL7|(?<![A-Za-z])[A-Z]{2,3}\^[A-Z]\d{2}|(?<![A-Za-z])(?:MSH|PID|PV1|ORC|OBR|OBX|SPM|TQ1|NTE|AL1|ODS|RXE|RXR)-\d+/, "連携の規格・電文・フィールドの名前"],
 ];
+// 業務フローの検査で、業務フローの文書どうしのリンク(文字と先のファイル名)は見ない。
+const FLOW_LINK = /\[[\w-]+\.md\]\([\w-]+\.md(#[^)\s]*)?\)|\]\([\w-]+\.md(#[^)\s]*)?\)/g;
+
+// 図の大きさの上限。本文の幅に縮めても読めるように、超えたら止まる(fhir-client 側で図を分けるか、中身を表に出す)。
+const DIAGRAM_LIMITS = {
+  nodes: 14, // 流れ図 1 枚のノードの数
+  labelLines: 2, // ノードのラベルの行の数(<br/> で数える)
+  messages: 20, // シーケンス図 1 枚のメッセージの数
+  participants: 5, // シーケンス図 1 枚の登場者の数
+  messageWidth: 48, // メッセージの文の幅(全角 2・半角 1)
+  noteLines: 3, // Note の行の数
+  noteWidth: 60, // Note の 1 行の幅
+};
 
 // 状態のラベルの色。表に一覧に無い状態が出たら止まるので、ここに足す。
 const STATE_TONES = {
@@ -108,18 +127,19 @@ function parse(entry, text) {
     intro: intro.filter((p) => !p[0].value.startsWith(DEV_PARAGRAPH)),
     body: lines.slice(ops + 1, dev < 0 ? lines.length : dev),
     devBody: dev < 0 ? [] : lines.slice(dev + 1),
-    devAnchors: devAnchorsOf(dev < 0 ? [] : lines.slice(dev + 1)),
+    opsAnchors: anchorsOf(lines.slice(ops + 1, dev < 0 ? lines.length : dev), (text) => text),
+    devAnchors: anchorsOf(dev < 0 ? [] : lines.slice(dev + 1), devHeading),
   };
 }
 
-// 「開発者向け」節の見出しのアンカー(元の文書での名前 → シーケンス図のページでの名前)。
-function devAnchorsOf(lines) {
+// 節の見出しのアンカー(元の文書での名前 → 写した先のページでの名前)。
+function anchorsOf(lines, rename) {
   const anchors = new Map();
   let fenced = false;
   for (const { value } of lines) {
     if (value.startsWith("```")) fenced = !fenced;
     const match = !fenced && value.match(/^#{2,6} (.+)$/);
-    if (match) anchors.set(slug(match[1]), slug(devHeading(match[1])));
+    if (match) anchors.set(slug(match[1]), slug(rename(match[1])));
   }
   return anchors;
 }
@@ -179,6 +199,7 @@ function renderDev(file, doc, problems) {
 // 節の中身。見出しを 1 段上げ(### → ##)、状態の表にラベルを付ける。
 function renderBody(file, lines, rewrite, problems) {
   const body = trimBlank(lines);
+  checkDiagrams(file, body, problems);
   const out = [];
   let fenced = false;
   let stateTable = false;
@@ -193,6 +214,70 @@ function renderBody(file, lines, rewrite, problems) {
     out.push(!fenced && /^#{3,6} /.test(value) ? value.slice(1) : value);
   });
   return out;
+}
+
+// 図ごとに大きさを確かめる。
+function checkDiagrams(file, lines, problems) {
+  let block = null;
+  for (const line of lines) {
+    if (block === null) {
+      if (line.value.trim() === "```mermaid") block = [];
+    } else if (line.value.trim() === "```") {
+      checkDiagram(file, block, problems);
+      block = null;
+    } else {
+      block.push(line);
+    }
+  }
+}
+
+function checkDiagram(file, block, problems) {
+  const first = block.find((line) => line.value.trim() !== "");
+  if (!first) return;
+  const at = `${file}:${first.n}`;
+  const limits = DIAGRAM_LIMITS;
+  const linesOf = (text) => text.split(/<br\s*\/?>/);
+  if (/^\s*(flowchart|graph)\b/.test(first.value)) {
+    const nodes = new Set();
+    for (const line of block) {
+      if (/^\s*subgraph\b/.test(line.value)) continue;
+      for (const [, id, label] of line.value.matchAll(/(?:^|\s)(\w+)\s*[[({]+"([^"]*)"[\])}]+/g)) {
+        nodes.add(id);
+        if (linesOf(label).length > limits.labelLines) {
+          problems.push(`${file}:${line.n}: ノードのラベルが ${linesOf(label).length} 行(上限 ${limits.labelLines})。項目の列挙は図の下の表に出す: ${label.slice(0, 40)}`);
+        }
+      }
+    }
+    if (nodes.size > limits.nodes) problems.push(`${at}: 流れ図のノードが ${nodes.size} 個(上限 ${limits.nodes})。図を分けるか、入力チェックの並びを表にする`);
+  } else if (/^\s*sequenceDiagram\b/.test(first.value)) {
+    let messages = 0;
+    let participants = 0;
+    for (const line of block) {
+      if (/^\s*(actor|participant)\s/.test(line.value)) participants += 1;
+      const message = line.value.match(/^\s*\w+\s*(?:-->>|->>|--\)|-\)|-->|->|--x|-x)\s*\w+\s*:\s*(.*)$/);
+      if (message) {
+        messages += 1;
+        if (width(message[1]) > limits.messageWidth) {
+          problems.push(`${file}:${line.n}: メッセージの文の幅が ${width(message[1])}(上限 ${limits.messageWidth})。検索の条件や要素の列挙は図の下に出す: ${message[1].slice(0, 40)}`);
+        }
+      }
+      const note = line.value.match(/^\s*Note\s+[^:]+:\s*(.*)$/);
+      if (note) {
+        const rows = linesOf(note[1]);
+        if (rows.length > limits.noteLines) problems.push(`${file}:${line.n}: Note が ${rows.length} 行(上限 ${limits.noteLines})。書き込みの中身は図の下の表に出す`);
+        else if (rows.some((row) => width(row) > limits.noteWidth)) problems.push(`${file}:${line.n}: Note の 1 行の幅が上限 ${limits.noteWidth} を超える`);
+      }
+    }
+    if (messages > limits.messages) problems.push(`${at}: シーケンス図のメッセージが ${messages} 本(上限 ${limits.messages})。操作ごとに図を分ける`);
+    if (participants > limits.participants) problems.push(`${at}: シーケンス図の登場者が ${participants}(上限 ${limits.participants})`);
+  }
+}
+
+// 文の幅。全角を 2、半角を 1 と数える。
+function width(text) {
+  let total = 0;
+  for (const char of text) total += /[\u0020-\u007e]/.test(char) ? 1 : 2;
+  return total;
 }
 
 function rolesOf(lines) {
@@ -230,10 +315,11 @@ function stateChip(file, line, value, problems) {
 }
 
 function rewriteFlowLine(file, line, problems) {
+  const checked = line.value.replace(FLOW_LINK, "");
   for (const [pattern, reason] of FORBIDDEN) {
-    if (pattern.test(line.value)) problems.push(`${file}:${line.n}: ${reason}: ${line.value.trim().slice(0, 80)}`);
+    if (pattern.test(checked)) problems.push(`${file}:${line.n}: ${reason}: ${line.value.trim().slice(0, 80)}`);
   }
-  return line.value.replace(LINK, (whole, text, target) => {
+  return line.value.replace(LINK, (whole, text, target, quoted) => {
     if (/^https?:/.test(target)) return whole;
     const [targetFile] = target.split("#");
     const linked = docs.get(targetFile);
@@ -242,7 +328,15 @@ function rewriteFlowLine(file, line, problems) {
       return whole;
     }
     // ファイル名のままのリンクの文字は、リンク先の文書の題名にする。
-    return `[${text.endsWith(".md") ? linked.title : text}](${target})`;
+    const sections = quoted.replace(QUOTED, (_, heading) => {
+      const anchor = linked.opsAnchors.get(slug(heading));
+      if (anchor === undefined) {
+        problems.push(`${file}:${line.n}: ${targetFile} の「運用フロー」節に見出し「${heading}」が無い`);
+        return `「${heading}」`;
+      }
+      return `「[${heading}](${targetFile}#${anchor})」`;
+    });
+    return `[${text.endsWith(".md") ? linked.title : text}](${target})${sections}`;
   });
 }
 
@@ -252,17 +346,34 @@ function rewriteDevLine(file, line, problems) {
   if (/`(docs\/)?[\w./-]+\.md`/.test(line.value)) {
     problems.push(`${file}:${line.n}: 文書の名前(出典は「([設計文書](../x.md) §1)」の括弧書きにする): ${line.value.trim().slice(0, 80)}`);
   }
-  return line.value.replace(CITATION, "").replace(LINK, (whole, text, target) => {
+  return line.value.replace(CITATION, "").replace(LINK, (whole, text, target, quoted) => {
     if (/^https?:/.test(target)) return whole;
     const [targetFile, anchor] = target.split("#");
     const linked = docs.get(targetFile);
-    if (linked) {
-      const label = text.endsWith(".md") ? linked.title : text;
-      if (anchor && linked.devAnchors.has(anchor)) return `[${label}](${targetFile}#${linked.devAnchors.get(anchor)})`;
-      return `[${label}](../flows/${targetFile}${anchor ? `#${anchor}` : ""})`;
+    if (!linked) {
+      problems.push(`${file}:${line.n}: 設計文書へのリンク(出典は「([設計文書](../x.md) §1)」の括弧書きにする): ${target}`);
+      return whole;
     }
-    problems.push(`${file}:${line.n}: 設計文書へのリンク(出典は「([設計文書](../x.md) §1)」の括弧書きにする): ${target}`);
-    return whole;
+    const named = !text.endsWith(".md");
+    if (anchor && linked.devAnchors.has(anchor)) {
+      return `[${named ? text : `${linked.name}のシーケンス図`}](${targetFile}#${linked.devAnchors.get(anchor)})${quoted}`;
+    }
+    // 直後の「」の節が「開発者向け」節の見出しなら、リンクも節の名前もシーケンス図のページへ向ける。
+    // 見出しは「シーケンス図: 」を付けても外しても指せる。
+    const devAnchor = (heading) => linked.devAnchors.get(slug(heading)) ?? linked.devAnchors.get(slug(`シーケンス図: ${heading}`));
+    const headings = [...quoted.matchAll(QUOTED)].map((match) => match[1]);
+    const toDev = !anchor && headings.length > 0 && headings.every((heading) => devAnchor(heading) !== undefined);
+    const base = toDev ? targetFile : `../flows/${targetFile}`;
+    const sections = quoted.replace(QUOTED, (_, heading) => {
+      const found = toDev ? devAnchor(heading) : linked.opsAnchors.get(slug(heading));
+      if (found === undefined) {
+        problems.push(`${file}:${line.n}: ${targetFile} に見出し「${heading}」が無い(「運用フロー」節と「開発者向け」節の見出しは 1 つのリンクに混ぜない)`);
+        return `「${heading}」`;
+      }
+      return `「[${toDev ? devHeading(heading) : heading}](${base}#${found})」`;
+    });
+    const label = named ? text : toDev ? `${linked.name}のシーケンス図` : linked.title;
+    return `[${label}](${base}${anchor ? `#${anchor}` : ""})${sections}`;
   });
 }
 
