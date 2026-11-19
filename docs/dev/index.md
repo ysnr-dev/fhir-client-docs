@@ -2,7 +2,7 @@
 
 <!-- scripts/sync-flows.mjs が ../fhir-client/docs/order-flows/readme.md から作る。直接編集しない。 -->
 
-院内の開発者向けに、業務フローの操作ごとに画面・backend・上流の FHIR サーバーの間で何が起きるかを示します。運用の流れは[業務フロー](../flows/index.md)を読みます。
+院内の開発者向けに、業務フローの操作ごとに画面・backend・上流の FHIR サーバーの間で何が起きるかを示します。運用の流れは[業務フロー](../flows/index.md)を、リソースの要素は[FHIR 実装ガイド](https://ysnr-dev.github.io/fhir-ig/index.html)を読みます。
 
 | 業務フロー | 内容 |
 |---|---|

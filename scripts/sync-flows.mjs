@@ -24,7 +24,7 @@ const DEV_NAV = ["# sync-dev:begin", "# sync-dev:end"];
 const FLOWS_LEAD = "オーダーの種別ごとに、登録から実施・結果の確認までの流れを図で示します。";
 const DEV_LEAD =
   "院内の開発者向けに、業務フローの操作ごとに画面・backend・上流の FHIR サーバーの間で何が起きるかを示します。" +
-  "運用の流れは[業務フロー](../flows/index.md)を読みます。";
+  "運用の流れは[業務フロー](../flows/index.md)を、リソースの要素は[FHIR 実装ガイド](https://ysnr-dev.github.io/fhir-ig/index.html)を読みます。";
 const LINK = /\[([^\]]*)\]\(([^)\s]+)\)/g;
 // 本文の出典の括弧書き。「([設計文書](../x.md))」「([設計文書](../x.md) §1)」。
 const CITATION = /\(\[[^\]]*\]\(\.\.\/[^)]*\)[^()]*\)/g;
