@@ -61,7 +61,7 @@ mkdocs.yml            サイトの設定と目次(nav。業務フローの部分
 ## 確認コマンド
 
 ```bash
-docker compose up -d docs                                   # http://localhost:8000/fhir-client-manual/ でプレビュー
+docker compose up -d docs                                   # http://localhost:8000/fhir-client-docs/ でプレビュー
 npm run sync-flows                                          # 業務フローを fhir-client から写し直す
 docker compose run --rm docs build --strict                 # 公開と同じビルド(リンク切れで失敗する)
 npm run shots -- <シーン名>                                   # 画面写真を撮り直す

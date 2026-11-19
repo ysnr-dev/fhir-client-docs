@@ -1,8 +1,8 @@
-# fhir-client-manual
+# fhir-client-docs
 
 電子カルテ(fhir-client)の業務フローと操作マニュアルです。MkDocs(Material)で GitHub Pages に公開します。
 
-公開先: https://ysnr-dev.github.io/fhir-client-manual/
+公開先: https://ysnr-dev.github.io/fhir-client-docs/
 
 ## プレビュー
 
@@ -10,7 +10,7 @@
 docker compose up -d docs
 ```
 
-http://localhost:8000/fhir-client-manual/ で確認できます。
+http://localhost:8000/fhir-client-docs/ で確認できます。
 
 ## 業務フローの取り込み
 
