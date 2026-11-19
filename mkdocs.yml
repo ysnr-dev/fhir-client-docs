@@ -101,3 +101,28 @@ nav:
   - 操作マニュアル:
       - manual/index.md
       - ログイン: manual/login.md
+  - シーケンス図:
+      - dev/index.md
+      # sync-dev:begin
+      - 処方オーダー: dev/prescription.md
+      - 注射オーダー: dev/injection.md
+      - 化学療法: dev/chemotherapy.md
+      - 検体検査オーダー: dev/lab.md
+      - 輸血オーダー: dev/transfusion.md
+      - 手術オーダー: dev/surgery.md
+      - 細菌検査オーダー: dev/micro.md
+      - 病理検査オーダー: dev/patho.md
+      - 放射線検査オーダー: dev/rad.md
+      - 生理検査・内視鏡・処置オーダー: dev/physio-endoscopy-treatment.md
+      - 他科依頼・チーム依頼: dev/consult-team.md
+      - 放射線治療: dev/radiotherapy.md
+      - リハビリオーダー: dev/rehab.md
+      - 透析オーダー: dev/dialysis.md
+      - 栄養指導・服薬指導: dev/guidance.md
+      - 食事オーダー: dev/meal.md
+      - 看護指示: dev/nursing.md
+      - 指導・管理料: dev/medical-management.md
+      - クリニカルパス: dev/clinical-pathway.md
+      - 入院から退院まで: dev/admission-discharge.md
+      - 外来の受付から会計まで: dev/outpatient.md
+      # sync-dev:end
