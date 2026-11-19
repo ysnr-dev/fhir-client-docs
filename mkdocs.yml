@@ -1,0 +1,103 @@
+site_name: 電子カルテ 操作マニュアル・業務フロー
+site_url: https://ysnr-dev.github.io/fhir-client-manual/
+repo_url: https://github.com/ysnr-dev/fhir-client-manual
+repo_name: fhir-client-manual
+docs_dir: docs
+strict: true
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
+theme:
+  name: material
+  custom_dir: overrides
+  language: ja
+  font:
+    text: BIZ UDPGothic
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: ダーク表示に切り替え
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: ライト表示に切り替え
+
+plugins:
+  - search:
+      lang: ja
+
+markdown_extensions:
+  - tables
+  - admonition
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+extra_css:
+  - stylesheets/extra.css
+
+# Material は読み込み済みの mermaid があればそれを使う。版を固定し、クリックで拡大を足す。
+extra_javascript:
+  - https://unpkg.com/mermaid@11.12.0/dist/mermaid.min.js
+  - javascripts/mermaid-config.js
+
+nav:
+  - はじめに: index.md
+  - 業務フロー:
+      - flows/index.md
+      # sync-flows:begin
+      - 処方オーダー: flows/prescription.md
+      - 注射オーダー: flows/injection.md
+      - 化学療法: flows/chemotherapy.md
+      - 検体検査オーダー: flows/lab.md
+      - 輸血オーダー: flows/transfusion.md
+      - 手術オーダー: flows/surgery.md
+      - 細菌検査オーダー: flows/micro.md
+      - 病理検査オーダー: flows/patho.md
+      - 放射線検査オーダー: flows/rad.md
+      - 生理検査・内視鏡・処置オーダー: flows/physio-endoscopy-treatment.md
+      - 他科依頼・チーム依頼: flows/consult-team.md
+      - 放射線治療: flows/radiotherapy.md
+      - リハビリオーダー: flows/rehab.md
+      - 透析オーダー: flows/dialysis.md
+      - 栄養指導・服薬指導: flows/guidance.md
+      - 食事オーダー: flows/meal.md
+      - 看護指示: flows/nursing.md
+      - 指導・管理料: flows/medical-management.md
+      - クリニカルパス: flows/clinical-pathway.md
+      - 入院から退院まで: flows/admission-discharge.md
+      - 外来の受付から会計まで: flows/outpatient.md
+      # sync-flows:end
+  - 操作マニュアル:
+      - manual/index.md
+      - ログイン: manual/login.md

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{#- ページの上に、属する部(業務フロー・操作マニュアル)の名前を小さく出す。部の一覧のページには出さない。 -#}
+{% block content %}
+  {% if page.parent and page.parent.title and page.parent.title != page.title %}
+    <p class="page-eyebrow">{{ page.parent.title }}</p>
+  {% endif %}
+  {{ super() }}
+{% endblock %}

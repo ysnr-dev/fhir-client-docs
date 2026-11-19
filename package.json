@@ -1,0 +1,13 @@
+{
+  "name": "fhir-client-manual",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "shots": "node --env-file-if-exists=.env shots/run.mjs",
+    "sync-flows": "node scripts/sync-flows.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.1",
+    "sharp": "^0.35.5"
+  }
+}
