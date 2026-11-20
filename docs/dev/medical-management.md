@@ -57,7 +57,7 @@ backend の項目マスタ(`master_management_fee_items`)の列です。
 名称と点数は列に持たず、一覧の API が診療行為マスタを LEFT JOIN して添えます。
 
 - **進捗 Task**: 作りません。部門が受けない種別なので、部門一覧・予約・受付もありません。
-- **備考の置き場所**: 備考を `Procedure.note` に置かないのは、実施記録の `note` が会計送信でフリーコメント(810000001)として日レセへ送られるためです。
+- **備考の置き場所**: 備考を `Procedure.note` に置かないのは、実施記録の `note` が医事送信でフリーコメント(810000001)として日レセへ送られるためです。
 - **コード体系**: 実施記録のコード体系を `{種別}-procedure-code` にしてあるので、会計側に種別ごとの対応表は要りません(`OrderCatalog::Definition#procedure_code_system`)。
 
 ## 状態の持ち方
@@ -191,7 +191,7 @@ sequenceDiagram
 - transaction は、子 → ハブの順に `Procedure` を DELETE し、最後にヘッダの `ServiceRequest` を DELETE します。
 - 種別共通の削除処理は、実施記録のあるオーダーの削除を止めます。ただし、同じ transaction で消す実施記録は「実施済み」と数えません。
 
-## 会計の送信
+## 医事送信
 
 会計の組み立ては `BillingClaimBuilder` の `:procedure` 経路です(既定の組み立てで、種別専用の resolver はありません)。
 

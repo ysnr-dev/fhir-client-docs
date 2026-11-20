@@ -201,7 +201,7 @@ sequenceDiagram
   participant BE as backend
   participant FHIR as 上流 FHIR
 
-  Us->>UI: 投与日パネルの予約
+  Us->>UI: 「化学療法(投与日)」で予約
   UI->>BE: GET /fhir(投与日の Slot)
   BE->>FHIR: 検索
   FHIR-->>UI: Schedule・Slot
