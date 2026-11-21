@@ -39,10 +39,10 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await page.evaluate(() => document.activeElement?.blur());
   await mark(modal.locator(".master-search__mode"), { label: 1 });
   await mark(modal.getByRole("textbox").first(), { label: 2 });
-  await mark(medicineRow.getByRole("button", { name: "選択" }), { label: 3, place: "corner" });
+  await mark(medicineRow, { label: 3 });
   await shot("03-medicine", { target: modal });
   await clearMarks();
-  await medicineRow.getByRole("button", { name: "選択" }).click();
+  await pickRow(medicineRow);
   await modal.waitFor({ state: "detached" });
 
   // 用量
@@ -64,10 +64,10 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await usageRow.waitFor();
   await page.evaluate(() => document.activeElement?.blur());
   await mark(modal.getByRole("textbox").first(), { label: 1 });
-  await mark(usageRow.getByRole("button", { name: "選択" }), { label: 2 });
+  await mark(usageRow, { label: 2 });
   await shot("05-usage", { target: modal });
   await clearMarks();
-  await usageRow.getByRole("button", { name: "選択" }).click();
+  await pickRow(usageRow);
   await modal.waitFor({ state: "detached" });
 
   // 投与日数
@@ -118,7 +118,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await modal.getByPlaceholder("部分一致で検索(かな・全半角の違いは無視)").first().fill("ロキソニン錠60mg");
   const loxoninRow = modal.getByRole("row").filter({ hasText: "ロキソニン" }).first();
   await loxoninRow.waitFor();
-  await loxoninRow.getByRole("button", { name: "選択" }).click();
+  await pickRow(loxoninRow);
   await modal.waitFor({ state: "detached" });
   await warnRp.locator(".rp-card__dose-input").first().fill("3");
   await warnRp.getByRole("button", { name: "用法を選択" }).click();
@@ -126,7 +126,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await modal.getByPlaceholder("部分一致で検索(かな・全半角の違いは無視)").fill("1日3回朝昼夕食後");
   const tidRow = modal.getByRole("row").filter({ hasText: /朝昼夕食後\s+服用/ }).first();
   await tidRow.waitFor();
-  await tidRow.getByRole("button", { name: "選択" }).click();
+  await pickRow(tidRow);
   await modal.waitFor({ state: "detached" });
   await warnRp.locator(".rp-card__dose-count-input").fill("5");
   await page.evaluate(() => document.activeElement?.blur());
@@ -175,6 +175,11 @@ async function openKarte(page) {
   if ((await rows.count()) !== 1) throw new Error(`患者「${PATIENT}」が 1 人に絞れません`);
   await rows.getByRole("link", { name: "カルテ" }).click();
   await page.locator(".karte-right").waitFor();
+}
+
+// 検索モーダルの行は、行そのものを押して選ぶ。行の端の「DI」リンクに当たらないよう名称の列を押す。
+async function pickRow(row) {
+  await row.locator("td").nth(1).click();
 }
 
 // 項目ラベルに包まれた入力部品。ラベルの文字ごと枠で囲むと、どの項目かが写真で分かる。
