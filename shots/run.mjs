@@ -12,7 +12,8 @@ if (names.length === 0) {
   process.exit(1);
 }
 
-const browser = await chromium.launch();
+// 日付欄などブラウザが描く部品を日本語の書式にするため、--lang の効く新しいヘッドレスで起動する。
+const browser = await chromium.launch({ channel: "chromium", args: ["--lang=ja-JP"] });
 try {
   for (const name of names) {
     const { default: scene } = await import(`./scenes/${name}.mjs`);

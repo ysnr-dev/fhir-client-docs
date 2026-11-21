@@ -4,7 +4,8 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { clearMarks, mark } from "./marks.mjs";
 
-const VIEWPORT = { width: 1440, height: 900 };
+// 横幅は右ペインの医薬品名や用法名が折り返さない広さにする。
+const VIEWPORT = { width: 1920, height: 1080 };
 const SCALE = 2;
 const CLIP_PADDING = 16;
 const BASE_URL = process.env.SHOTS_BASE_URL || "http://localhost:5173";
@@ -32,10 +33,10 @@ export async function createSession(browser, scene) {
     /** 操作する場所に赤枠と番号を重ねる。 */
     mark: (target, options) => mark(page, toLocator(page, target), options),
     clearMarks: () => clearMarks(page),
-    /** 画面全体、または target の周りだけを撮って <name>.webp に書き出す。 */
+    /** 画面全体、または target(配列なら全部を囲む範囲)の周りだけを撮って <name>.webp に書き出す。 */
     shot: async (name, { target, padding = CLIP_PADDING, fullPage = false } = {}) => {
       const image = target
-        ? await page.screenshot({ clip: await paddedBox(page, toLocator(page, target), padding), animations: "disabled" })
+        ? await page.screenshot({ clip: await paddedBox(page, target, padding), animations: "disabled" })
         : await page.screenshot({ fullPage, animations: "disabled" });
       const file = fileURLToPath(new URL(`${name}.webp`, outDir));
       await sharp(image).webp({ quality: 85 }).toFile(file);
@@ -50,17 +51,28 @@ function toLocator(page, target) {
   return typeof target === "string" ? page.locator(target) : target;
 }
 
-async function paddedBox(page, locator, padding) {
-  await locator.scrollIntoViewIfNeeded();
-  const box = await locator.boundingBox();
-  if (!box) throw new Error(`撮影の範囲が見つかりません: ${locator}`);
-  const x = Math.max(0, box.x - padding);
-  const y = Math.max(0, box.y - padding);
+// target が配列なら、すべてを囲む範囲にする。全部が画面に入る位置へのスクロールはシーンで済ませておく
+// (注釈は文書に対して置くので、注釈を付けたあとに枠の中だけスクロールすると注釈がずれる)。
+async function paddedBox(page, target, padding) {
+  const locators = (Array.isArray(target) ? target : [target]).map((t) => toLocator(page, t));
+  await locators[0].scrollIntoViewIfNeeded();
+  const boxes = [];
+  for (const locator of locators) {
+    const box = await locator.boundingBox();
+    if (!box) throw new Error(`撮影の範囲が見つかりません: ${locator}`);
+    boxes.push(box);
+  }
+  const left = Math.min(...boxes.map((b) => b.x));
+  const top = Math.min(...boxes.map((b) => b.y));
+  const right = Math.max(...boxes.map((b) => b.x + b.width));
+  const bottom = Math.max(...boxes.map((b) => b.y + b.height));
+  const x = Math.max(0, left - padding);
+  const y = Math.max(0, top - padding);
   return {
     x,
     y,
-    width: Math.min(VIEWPORT.width - x, box.width + padding * 2),
-    height: Math.min(VIEWPORT.height - y, box.height + padding * 2),
+    width: Math.min(VIEWPORT.width - x, right - left + padding * 2),
+    height: Math.min(VIEWPORT.height - y, bottom - top + padding * 2),
   };
 }
 

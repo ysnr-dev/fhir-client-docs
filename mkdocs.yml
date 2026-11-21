@@ -101,6 +101,7 @@ nav:
   - 操作マニュアル:
       - manual/index.md
       - ログイン: manual/login.md
+      - 処方オーダー: manual/prescription.md
   - シーケンス図:
       - dev/index.md
       # sync-dev:begin
