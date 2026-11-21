@@ -1,13 +1,15 @@
 // 操作マニュアル「処方オーダー」(docs/manual/prescription.md)
 // 患者「見本 花子」(撮影用の架空の患者。薬剤アレルギーにロキソプロフェンを登録してある)で撮る。
 // 撮影の前後に、この患者の処方をカルテから削除して、毎回同じ画面から始める。
+import { blur, deleteAllCards, labeled, menuItem, openKarte, pickRow } from "../lib/karte.mjs";
+
 const PATIENT = "見本 花子";
 const PRESCRIPTION_CARD = ".karte-card--prescription";
 
 export default async function ({ page, login, mark, clearMarks, shot }) {
   await login("doctor");
-  await openKarte(page);
-  await deleteAllPrescriptions(page);
+  await openKarte(page, PATIENT);
+  await deleteAllCards(page, PRESCRIPTION_CARD);
 
   // 処方登録を開く
   const paneButton = page.locator(".karte-right").getByRole("button", { name: "処方", exact: true });
@@ -20,7 +22,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   const form = page.locator(".prescription-form");
   const common = form.locator("fieldset").first();
   await common.waitFor();
-  await page.evaluate(() => document.activeElement?.blur());
+  await blur(page);
   await mark(labeled(common, "対象プロブレム"), { label: 1 });
   await mark(labeled(common, "入外区分"), { label: 2, place: "corner" });
   await mark(labeled(common, "処方区分"), { label: 3, place: "corner" });
@@ -36,7 +38,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await modal.getByPlaceholder("部分一致で検索(かな・全半角の違いは無視)").first().fill("アムロジピン錠5mg「あすか」");
   const medicineRow = modal.getByRole("row").filter({ hasText: "あすか" }).first();
   await medicineRow.waitFor();
-  await page.evaluate(() => document.activeElement?.blur());
+  await blur(page);
   await mark(modal.locator(".master-search__mode"), { label: 1 });
   await mark(modal.getByRole("textbox").first(), { label: 2 });
   await mark(medicineRow, { label: 3 });
@@ -48,7 +50,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   // 用量
   const doseInput = rp.locator(".rp-card__dose-input").first();
   await doseInput.fill("1");
-  await page.evaluate(() => document.activeElement?.blur());
+  await blur(page);
   await mark(rp.getByLabel("用量の入力"), { label: 1, place: "corner" });
   await mark(doseInput, { label: 2, place: "corner" });
   await mark(rp.locator(".rp-card__medicine-unit select").first(), { label: 3, place: "corner" });
@@ -62,7 +64,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await modal.getByPlaceholder("部分一致で検索(かな・全半角の違いは無視)").fill("1日1回朝食後");
   const usageRow = modal.getByRole("row").filter({ hasText: /朝食後\s+服用/ }).first();
   await usageRow.waitFor();
-  await page.evaluate(() => document.activeElement?.blur());
+  await blur(page);
   await mark(modal.getByRole("textbox").first(), { label: 1 });
   await mark(usageRow, { label: 2 });
   await shot("05-usage", { target: modal });
@@ -73,7 +75,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   // 投与日数
   const days = rp.locator(".rp-card__dose-count-input");
   await days.fill("14");
-  await page.evaluate(() => document.activeElement?.blur());
+  await blur(page);
   await mark(days, { label: 1 });
   await shot("06-days", { target: rp });
   await clearMarks();
@@ -103,8 +105,8 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await card.getByRole("button", { name: /の操作$/ }).click();
   const menu = page.locator(".row-menu__popover, [role=menu]").last();
   await mark(card.getByRole("button", { name: /^DO/ }), { label: 1 });
-  await mark(page.getByRole("menuitem", { name: "編集" }).or(page.locator(".row-menu__item", { hasText: /^編集$/ })), { label: 2 });
-  await mark(page.getByRole("menuitem", { name: "削除" }).or(page.locator(".row-menu__item", { hasText: /^削除$/ })), { label: 3 });
+  await mark(page.getByRole("menuitem", { name: "編集" }).or(menuItem(page, "編集")), { label: 2 });
+  await mark(page.getByRole("menuitem", { name: "削除" }).or(menuItem(page, "削除")), { label: 3 });
   await shot("10-card-menu", { target: [card, menu] });
   await clearMarks();
   await page.keyboard.press("Escape");
@@ -129,7 +131,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await pickRow(tidRow);
   await modal.waitFor({ state: "detached" });
   await warnRp.locator(".rp-card__dose-count-input").fill("5");
-  await page.evaluate(() => document.activeElement?.blur());
+  await blur(page);
   const warning = warnRp.locator(".medicine-warning").filter({ hasText: "アレルギー" }).first();
   await warning.waitFor();
   await mark(warning, { label: 1 });
@@ -140,7 +142,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   modal = page.locator(".modal").filter({ hasText: "警告の確認" });
   await modal.waitFor();
   await modal.locator("select").first().selectOption({ index: 1 });
-  await page.evaluate(() => document.activeElement?.blur());
+  await blur(page);
   await mark(modal.locator("select").first(), { label: 1 });
   await mark(modal.getByPlaceholder("補足"), { label: 2, place: "corner" });
   await mark(modal.getByRole("button", { name: "登録", exact: true }), { label: 3 });
@@ -153,52 +155,15 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
 
   // 削除
   await card.getByRole("button", { name: /の操作$/ }).click();
-  await page.locator(".row-menu__item", { hasText: /^削除$/ }).click();
+  await menuItem(page, "削除").click();
   modal = page.locator(".modal").filter({ hasText: "処方の削除" });
   await modal.waitFor();
   await modal.getByRole("combobox").fill("誤入力");
-  await page.evaluate(() => document.activeElement?.blur());
+  await blur(page);
   await mark(modal.getByRole("combobox"), { label: 1 });
   await mark(modal.getByRole("button", { name: "削除", exact: true }), { label: 2 });
   await shot("13-delete", { target: modal });
   await clearMarks();
   await modal.getByRole("button", { name: "削除", exact: true }).click();
   await card.waitFor({ state: "detached" });
-}
-
-async function openKarte(page) {
-  await page.goto("/patients");
-  await page.getByLabel("氏名(漢字・カナ部分一致)").fill(PATIENT);
-  await page.getByRole("button", { name: "検索", exact: true }).click();
-  const rows = page.getByRole("row").filter({ hasText: PATIENT });
-  await rows.first().waitFor();
-  if ((await rows.count()) !== 1) throw new Error(`患者「${PATIENT}」が 1 人に絞れません`);
-  await rows.getByRole("link", { name: "カルテ" }).click();
-  await page.locator(".karte-right").waitFor();
-}
-
-// 検索モーダルの行は、行そのものを押して選ぶ。行の端の「DI」リンクに当たらないよう名称の列を押す。
-async function pickRow(row) {
-  await row.locator("td").nth(1).click();
-}
-
-// 項目ラベルに包まれた入力部品。ラベルの文字ごと枠で囲むと、どの項目かが写真で分かる。
-function labeled(scope, text) {
-  return scope.locator("label").filter({ hasText: text }).first();
-}
-
-async function deleteAllPrescriptions(page) {
-  await page.waitForLoadState("networkidle");
-  const cards = page.locator(PRESCRIPTION_CARD);
-  for (let remaining = await cards.count(); remaining > 0; remaining -= 1) {
-    await cards.first().getByRole("button", { name: /の操作$/ }).click();
-    await page.locator(".row-menu__item", { hasText: /^削除$/ }).click();
-    const modal = page.locator(".modal").filter({ hasText: "処方の削除" });
-    await modal.getByRole("combobox").fill("誤入力");
-    await modal.getByRole("button", { name: "削除", exact: true }).click();
-    await page.waitForFunction(
-      ({ selector, count }) => document.querySelectorAll(selector).length < count,
-      { selector: PRESCRIPTION_CARD, count: remaining },
-    );
-  }
 }

@@ -1,8 +1,14 @@
-// シーンに渡す撮影の道具一式。画面の大きさ・倍率・テーマ・時刻帯はここで固定する。
+// シーンに渡す撮影の道具一式。画面の大きさ・倍率・テーマ・時刻帯・撮影日はここで固定する。
 import { mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { clearMarks, mark } from "./marks.mjs";
+
+// 撮影日。ブラウザの時計をこの日の朝に合わせ、時は進むままにする。開発データの無い日なので、
+// その日の一覧には撮影のデータだけが並び、写真の日付も撮り直しで変わらない。
+// fhir-client の撮影用データ(frontend/src/demo-seed/manualShots.ts)の SHOOTING_DATE と揃える。
+export const SHOOTING_DATE = "2027-02-01";
+const SHOOTING_START = new Date(`${SHOOTING_DATE}T09:00:00+09:00`);
 
 // 横幅は右ペインの医薬品名や用法名が折り返さない広さにする。
 const VIEWPORT = { width: 1920, height: 1080 };
@@ -22,6 +28,7 @@ export async function createSession(browser, scene) {
     timezoneId: "Asia/Tokyo",
     colorScheme: "dark",
   });
+  await context.clock.install({ time: SHOOTING_START });
   const page = await context.newPage();
   const outDir = new URL(`${scene}/`, IMAGE_ROOT);
   await mkdir(outDir, { recursive: true });

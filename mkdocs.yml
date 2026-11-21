@@ -100,9 +100,11 @@ nav:
       # sync-flows:end
   - 操作マニュアル:
       - manual/index.md
-      - ログイン: manual/login.md
-      - 処方オーダー: manual/prescription.md
-      - 注射オーダー: manual/injection.md
+      - 共通:
+          - ログイン: manual/login.md
+      - 医師:
+          - 処方オーダー: manual/prescription.md
+          - 注射オーダー: manual/injection.md
   - シーケンス図:
       - dev/index.md
       # sync-dev:begin
