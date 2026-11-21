@@ -20,6 +20,7 @@ shots/                画面写真の撮影(Playwright)
   scenes/<シーン名>.mjs  1 ページぶんの撮影手順
 scripts/sync-flows.mjs  業務フローの取り込み
 mkdocs.yml            サイトの設定と目次(nav。業務フローの部分は sync-flows が作り直す)
+manual-plan.md        操作マニュアルの作成計画と進み具合(公開しない。ページを足したら印を付ける)
 .github/workflows/pages.yml  main への push で Pages に公開
 ```
 
