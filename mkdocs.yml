@@ -153,6 +153,15 @@ nav:
           - 褥瘡管理: manual/nursing-pressure-ulcer.md
           - 留置物管理: manual/nursing-line-drain.md
           - 血糖インスリン: manual/nursing-insulin.md
+      - 薬剤部:
+          - 処方監査: manual/rx-verification.md
+          - 処方一覧と調剤: manual/rx-worklist.md
+          - 注射一覧と払出: manual/injection-worklist.md
+          - 疑義照会: manual/rx-inquiry.md
+          - 持参薬鑑別: manual/brought-medication.md
+          - 服薬指導: manual/medication-guidance.md
+          - ロット管理: manual/lot-management.md
+          - 抗菌薬適正使用: manual/ast.md
   - シーケンス図:
       - dev/index.md
       # sync-dev:begin
