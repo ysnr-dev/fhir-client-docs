@@ -55,6 +55,41 @@ export async function deleteAllCards(page, cards) {
   }
 }
 
+/** 開いているカルテの患者 ID(URL の /patients/:id/karte から)。 */
+export function patientIdOf(page) {
+  const id = new URL(page.url()).pathname.match(/\/patients\/([^/]+)\/karte/)?.[1];
+  if (!id) throw new Error(`カルテの URL ではありません: ${page.url()}`);
+  return id;
+}
+
+/**
+ * ログイン中のセッションで FHIR を直接読み書きする。画面に削除の操作が無い記録(取り消した予約など)を、
+ * 撮影の前後に片付けるときだけ使う。写真に写す操作は画面で行う。
+ */
+export async function fhirApi(page) {
+  const { csrf_token: csrf } = await (await page.request.get("/auth/session")).json();
+  const ok = async (response) => {
+    if (!response.ok()) throw new Error(`${response.url()}: ${response.status()} ${await response.text()}`);
+    return response.status() === 204 ? null : response.json();
+  };
+  return {
+    search: async (type, params) => {
+      const bundle = await ok(await page.request.get(`/fhir/${type}?${new URLSearchParams(params)}`));
+      return (bundle.entry ?? []).map((entry) => entry.resource).filter((r) => r?.resourceType === type);
+    },
+    read: async (reference) => ok(await page.request.get(`/fhir/${reference}`)),
+    update: async (resource) =>
+      ok(
+        await page.request.put(`/fhir/${resource.resourceType}/${resource.id}`, {
+          headers: { "Content-Type": "application/fhir+json", "X-CSRF-Token": csrf },
+          data: JSON.stringify(resource),
+        }),
+      ),
+    remove: async (type, id) =>
+      ok(await page.request.delete(`/fhir/${type}/${id}`, { headers: { "X-CSRF-Token": csrf } })),
+  };
+}
+
 /** 日付(YYYY-MM-DD)に日数を足す。 */
 export function addDays(date, days) {
   const [y, m, d] = date.split("-").map(Number);
