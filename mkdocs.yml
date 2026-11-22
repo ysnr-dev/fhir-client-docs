@@ -185,6 +185,12 @@ nav:
           - 栄養管理: manual/nutrition-management.md
           - 外来化学療法室: manual/chemo-room.md
           - 地域連携: manual/referrals.md
+      - 外来・病棟:
+          - 外来患者一覧: manual/outpatient.md
+          - 救急患者一覧: manual/emergency.md
+          - 入院患者一覧・病棟マップ: manual/inpatient.md
+          - ベッドスケジュール・病床状況: manual/bed-management.md
+          - 予約枠: manual/schedules.md
   - シーケンス図:
       - dev/index.md
       # sync-dev:begin
