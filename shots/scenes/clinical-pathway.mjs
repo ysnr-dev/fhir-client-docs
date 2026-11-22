@@ -1,6 +1,7 @@
 // 操作マニュアル「クリニカルパス」(docs/manual/clinical-pathway.md)
 // 入院中の患者「見本 太郎」(撮影用の架空の患者。早期胃癌)に、胃 ESD のパスを撮影日を病日 1 にして適用して撮る。
-// 撮影の前後に、この患者のオーダーとパスの記録(パスシート・評価・タスク)を直接消す。
+// 撮影の最後に、パスタブの「適用の取り消し」でパスとパスから出たオーダーを消す。撮影の前には、
+// 前回の撮影が途中で止まったときの残りを、この患者のオーダーとパスの記録ごと直接消す。
 import { blur, labeled, openKarte, patientIdOf, removeOrdersOf } from "../lib/karte.mjs";
 import { SHOOTING_DATE } from "../lib/session.mjs";
 
@@ -119,9 +120,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await mark(cancelButton, { label: 1 });
   await shot("08-cancel", { target: cancel });
   await clearMarks();
-  // 「取消」は押さない。適用の直後でも「実施記録があるため削除できません」で止まる(manual-plan.md の気になる点)。
-  // 後片付けは、この患者のオーダーとパスの記録を直接消す。
-  await page.keyboard.press("Escape");
-  await cancel.waitFor({ state: "detached" });
-  await cleanUp();
+  // 撮影の後片付けを兼ねて取り消す。
+  await cancelButton.click();
+  await cancel.waitFor({ state: "detached", timeout: 120_000 });
 }
