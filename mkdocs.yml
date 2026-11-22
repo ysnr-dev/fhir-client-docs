@@ -128,6 +128,16 @@ nav:
           - 内視鏡: manual/endoscopy.md
           - 処置: manual/treatment.md
           - 手術: manual/surgery.md
+          - 輸血: manual/transfusion.md
+          - 食事: manual/meal.md
+          - リハビリ: manual/rehab.md
+          - 透析: manual/dialysis.md
+          - 放射線治療: manual/radiotherapy.md
+          - 栄養指導・服薬指導: manual/guidance.md
+          - 指導・管理料: manual/medical-management.md
+          - 他科依頼・チーム依頼: manual/consult-team.md
+          - クリニカルパス: manual/clinical-pathway.md
+          - 退院時サマリー: manual/discharge-summary.md
   - シーケンス図:
       - dev/index.md
       # sync-dev:begin
