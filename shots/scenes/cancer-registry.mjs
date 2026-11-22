@@ -1,6 +1,6 @@
 // 操作マニュアル「院内がん登録」(docs/manual/cancer-registry.md)
 // 医師 四郎が、院内がん登録の一覧を診断日で見本 太郎(早期胃癌)・見本 次郎(結腸癌)に絞り、見本 太郎の「登録」から
-// 標準登録様式のテンプレートを開き、初期値の入った登録の画面を撮る(必須の項目が多いので登録はしない)。
+// 標準登録様式のテンプレートを開き、初期値の入った登録を「下書き保存」で残す。一覧に戻って登録中の行を撮る。
 // 撮影の前後に、見本 太郎の院内がん登録の回答を消す。
 import { blur, fhirApi, labeled } from "../lib/karte.mjs";
 import { patientIdByName } from "../lib/outpatient.mjs";
@@ -51,6 +51,27 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await mark(problem, { label: 3, place: "corner" });
   await mark(form.locator(".qp-field").filter({ hasText: "[900] 病院等の名称" }).last(), { label: 4, place: "corner" });
   await shot("02-form", { target: [right.getByText("テンプレート登録", { exact: true }), right.getByText("閉じる", { exact: true }), birthDate], padding: 24 });
+  await clearMarks();
+
+  // 下書き保存する
+  const submitArea = form.locator(".prescription-form__submit");
+  await submitArea.evaluate((el) => el.scrollIntoView({ block: "end" }));
+  await mark(submitArea.getByRole("button", { name: "下書き保存" }), { label: 1, place: "corner" });
+  await mark(submitArea.getByRole("button", { name: "登録", exact: true }), { label: 2, place: "corner" });
+  await shot("03-submit", { target: [form.locator(".qp-field").last(), submitArea], padding: 24 });
+  await clearMarks();
+  await submitArea.getByRole("button", { name: "下書き保存" }).click();
+  await submitArea.waitFor({ state: "detached" });
+  await page.waitForLoadState("networkidle");
+
+  const after = await openList(page);
+  const registered = after.filter({ hasText: PATIENT });
+  await registered.getByRole("link", { name: "開く" }).waitFor();
+  await mark(registered.locator("td").nth(8), { label: 1, place: "corner" });
+  await mark(registered.locator("td").nth(9), { label: 2, place: "corner" });
+  await mark(registered.locator("td").nth(12), { label: 2, place: "corner" });
+  await mark(registered.getByRole("link", { name: "開く" }), { label: 3, place: "corner" });
+  await shot("04-registered", { target: [page.locator(".lab-worklist thead"), after.last()], padding: 24 });
   await clearMarks();
 
   await cleanUp();
