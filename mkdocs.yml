@@ -191,6 +191,14 @@ nav:
           - 入院患者一覧・病棟マップ: manual/inpatient.md
           - ベッドスケジュール・病床状況: manual/bed-management.md
           - 予約枠: manual/schedules.md
+      - データ:
+          - データ抽出: manual/data-extract.md
+          - 分析ダッシュボード: manual/dashboard.md
+          - 患者フォルダ: manual/patient-folder.md
+          - DPC: manual/dpc.md
+          - 院内がん登録: manual/cancer-registry.md
+          - NCD 症例登録: manual/ncd.md
+          - 感染症発生届・感染サーベイランス: manual/infection-report.md
   - シーケンス図:
       - dev/index.md
       # sync-dev:begin
