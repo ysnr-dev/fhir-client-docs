@@ -138,6 +138,21 @@ nav:
           - 他科依頼・チーム依頼: manual/consult-team.md
           - クリニカルパス: manual/clinical-pathway.md
           - 退院時サマリー: manual/discharge-summary.md
+      - 看護:
+          - 指示簿: manual/nursing-orders.md
+          - 看護指示の実施: manual/nursing-perform.md
+          - ワークシート: manual/nursing-worksheet.md
+          - 経過表と一括入力: manual/nursing-flowsheet.md
+          - 注射の実施入力: manual/nursing-injection.md
+          - 看護計画・看護診断: manual/nursing-care-plan.md
+          - 看護記録: manual/nursing-note.md
+          - 看護プロファイル: manual/nursing-profile.md
+          - 看護サマリー: manual/nursing-summary.md
+          - 業務分担: manual/nursing-assignment.md
+          - 看護必要度: manual/nursing-acuity.md
+          - 褥瘡管理: manual/nursing-pressure-ulcer.md
+          - 留置物管理: manual/nursing-line-drain.md
+          - 血糖インスリン: manual/nursing-insulin.md
   - シーケンス図:
       - dev/index.md
       # sync-dev:begin

@@ -2,7 +2,7 @@
 // 看護師(看護 次郎)が医師 四郎の指示で見本 花子の処方を代行入力し、医師 四郎が承認する。
 // 続いて研修医(研修 五郎)が診療記録を確定し、指導医の医師 四郎がカルテ承認で承認する。
 // 撮影の前後に、撮影日の処方と診療記録を医師 四郎で削除して、毎回同じ画面から始める。
-import { dayGroup, deleteAllCards, fhirApi, menuItem, openKarte, patientIdOf, pickRow } from "../lib/karte.mjs";
+import { dayGroup, deleteAllCards, fhirApi, logout, menuItem, openKarte, patientIdOf, pickRow } from "../lib/karte.mjs";
 import { SHOOTING_DATE } from "../lib/session.mjs";
 
 const PATIENT = "見本 花子";
@@ -156,9 +156,3 @@ async function removeCountersignTasks(page, patientId) {
  * ログアウトする。看護師で処方を登録した直後のログアウトは、ログイン画面が出てもセッションが残ることがあるので、
  * Cookie も消して次のログインを確実にする。
  */
-async function logout(page) {
-  await page.waitForLoadState("networkidle");
-  await page.getByRole("button", { name: "ログアウト" }).click();
-  await page.getByLabel("ログインID").waitFor();
-  await page.context().clearCookies();
-}

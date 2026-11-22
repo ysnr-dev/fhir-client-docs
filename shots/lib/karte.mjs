@@ -140,3 +140,21 @@ export function addDays(date, days) {
   const [y, m, d] = date.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
+
+/**
+ * ログアウトし、Cookie も消す(役割を替えて続けて撮るとき)。ログアウトの前に出ていた通信の応答が、あとから
+ * ログイン中のセッションの Cookie を書き戻すことがあるので、開き直してログイン画面になるまで消し直す。
+ */
+export async function logout(page) {
+  await page.waitForLoadState("networkidle");
+  const loggedOut = page.waitForResponse((r) => r.url().endsWith("/auth/session") && r.request().method() === "DELETE");
+  await page.getByRole("button", { name: "ログアウト" }).click();
+  await loggedOut;
+  for (let i = 0; i < 5; i++) {
+    await page.context().clearCookies();
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    if (await page.getByLabel("ログインID").isVisible()) return;
+  }
+  throw new Error("ログアウトできません");
+}
