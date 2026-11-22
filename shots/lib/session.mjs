@@ -17,7 +17,7 @@ const CLIP_PADDING = 16;
 const BASE_URL = process.env.SHOTS_BASE_URL || "http://localhost:5173";
 const IMAGE_ROOT = new URL("../../docs/manual/img/", import.meta.url);
 
-const ROLES = { doctor: "DOCTOR", resident: "RESIDENT", nurse: "NURSE", headNurse: "HEAD_NURSE", pharmacist: "PHARMACIST" };
+const ROLES = { doctor: "DOCTOR", resident: "RESIDENT", nurse: "NURSE", headNurse: "HEAD_NURSE", pharmacist: "PHARMACIST", labTech: "LAB_TECH", pathologist: "PATHOLOGIST" };
 
 export async function createSession(browser, scene) {
   const context = await browser.newContext({
@@ -35,7 +35,7 @@ export async function createSession(browser, scene) {
 
   const api = {
     page,
-    /** 役割(doctor / resident / nurse / headNurse / pharmacist)のアカウントでログインする。アカウントは .env。 */
+    /** 役割(doctor / resident / nurse / headNurse / pharmacist / labTech / pathologist)のアカウントでログインする。アカウントは .env。 */
     login: (role) => login(page, role),
     /** 操作する場所に赤枠と番号を重ねる。 */
     mark: (target, options) => mark(page, toLocator(page, target), options),
