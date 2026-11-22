@@ -51,7 +51,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await mark(right.getByRole("button", { name: "最大化" }), { label: 3, place: "corner" });
   await mark(right.getByLabel("紹介先医療機関"), { label: 4 });
   await mark(right.getByLabel("紹介元医療機関名"), { label: 5 });
-  await mark(right.getByRole("button", { name: "作成", exact: true }), { label: 6 });
+  await mark(right.getByRole("button", { name: "作成", exact: true }), { label: 6, place: "corner" });
   await shot("02-form", { target: [right.locator(".template-select__trigger"), right.getByLabel("患者氏名"), right.getByRole("button", { name: "作成", exact: true })], padding: 24 });
   await clearMarks();
 
