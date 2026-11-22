@@ -168,6 +168,23 @@ nav:
           - 検査結果取込: manual/lab-result-import.md
           - 細菌検査一覧: manual/micro-worklist.md
           - 病理(受付・レポート): manual/patho-worklist.md
+          - 輸血一覧: manual/transfusion-worklist.md
+      - 放射線:
+          - 放射線検査(実施入力・読影レポート): manual/rad-worklist.md
+          - 放射線治療カレンダー: manual/radiotherapy-calendar.md
+      - 検査・処置:
+          - 生理検査・内視鏡・処置の一覧: manual/exam-worklists.md
+      - 手術:
+          - 手術(一覧・カレンダー): manual/surgery-worklist.md
+          - 麻酔チャート・術前診察: manual/anesthesia.md
+      - 各部門:
+          - リハビリ一覧: manual/rehab-worklist.md
+          - 透析一覧: manual/dialysis-worklist.md
+          - 栄養指導一覧: manual/nutrition-guidance-worklist.md
+          - 食事一覧: manual/meal-worklist.md
+          - 栄養管理: manual/nutrition-management.md
+          - 外来化学療法室: manual/chemo-room.md
+          - 地域連携: manual/referrals.md
   - シーケンス図:
       - dev/index.md
       # sync-dev:begin

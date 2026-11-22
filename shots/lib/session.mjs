@@ -17,7 +17,7 @@ const CLIP_PADDING = 16;
 const BASE_URL = process.env.SHOTS_BASE_URL || "http://localhost:5173";
 const IMAGE_ROOT = new URL("../../docs/manual/img/", import.meta.url);
 
-const ROLES = { doctor: "DOCTOR", resident: "RESIDENT", nurse: "NURSE", headNurse: "HEAD_NURSE", pharmacist: "PHARMACIST", labTech: "LAB_TECH", pathologist: "PATHOLOGIST" };
+const ROLES = { doctor: "DOCTOR", resident: "RESIDENT", nurse: "NURSE", headNurse: "HEAD_NURSE", pharmacist: "PHARMACIST", labTech: "LAB_TECH", pathologist: "PATHOLOGIST", radTech: "RAD_TECH", radiologist: "RADIOLOGIST", anesthesiologist: "ANESTHESIOLOGIST", therapist: "THERAPIST", clinicalEngineer: "CLINICAL_ENGINEER", dietitian: "DIETITIAN", liaison: "LIAISON" };
 
 export async function createSession(browser, scene) {
   const context = await browser.newContext({
@@ -35,7 +35,7 @@ export async function createSession(browser, scene) {
 
   const api = {
     page,
-    /** 役割(doctor / resident / nurse / headNurse / pharmacist / labTech / pathologist)のアカウントでログインする。アカウントは .env。 */
+    /** 役割(doctor / resident / nurse / headNurse / pharmacist / labTech / pathologist / radTech / radiologist / anesthesiologist / therapist / clinicalEngineer / dietitian / liaison)のアカウントでログインする。アカウントは .env。 */
     login: (role) => login(page, role),
     /** 操作する場所に赤枠と番号を重ねる。 */
     mark: (target, options) => mark(page, toLocator(page, target), options),
@@ -62,7 +62,12 @@ function toLocator(page, target) {
 // (注釈は文書に対して置くので、注釈を付けたあとに枠の中だけスクロールすると注釈がずれる)。
 async function paddedBox(page, target, padding) {
   const locators = (Array.isArray(target) ? target : [target]).map((t) => toLocator(page, t));
-  await locators[0].scrollIntoViewIfNeeded();
+  // 画面に収まっているときはスクロールしない(モーダルの中で送られると、付けた注釈がずれる)。
+  const inView = await locators[0].evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return r.top >= 0 && r.bottom <= window.innerHeight;
+  });
+  if (!inView) await locators[0].scrollIntoViewIfNeeded();
   const boxes = [];
   for (const locator of locators) {
     const box = await locator.boundingBox();

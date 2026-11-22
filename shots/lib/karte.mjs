@@ -27,6 +27,20 @@ export function menuItem(page, text) {
   return page.locator(".row-menu__item", { hasText: new RegExp(`^${text}$`) });
 }
 
+/**
+ * 部品の位置と大きさが落ち着くまで待つ。中身が後から読み込まれて伸びるモーダル(画面の中央に置くので上にも動く)に
+ * 注釈を付ける前に使う。
+ */
+export async function settle(locator, { interval = 200, timeout = 10000 } = {}) {
+  let previous = null;
+  for (const start = Date.now(); Date.now() - start < timeout; ) {
+    const box = await locator.boundingBox();
+    if (previous && box && JSON.stringify(box) === JSON.stringify(previous)) return;
+    previous = box;
+    await locator.page().waitForTimeout(interval);
+  }
+}
+
 /** 入力欄のフォーカスを外す(カーソルやフォーカスの枠を写さない)。 */
 export async function blur(page) {
   await page.evaluate(() => document.activeElement?.blur());
