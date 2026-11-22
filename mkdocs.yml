@@ -119,6 +119,15 @@ nav:
           - 代行入力とカルテ承認: manual/proxy-countersign.md
           - 処方オーダー: manual/prescription.md
           - 注射オーダー: manual/injection.md
+          - 化学療法: manual/chemotherapy.md
+          - 検体検査: manual/lab.md
+          - 細菌検査: manual/micro.md
+          - 病理検査: manual/patho.md
+          - 放射線検査: manual/rad.md
+          - 生理検査: manual/physio.md
+          - 内視鏡: manual/endoscopy.md
+          - 処置: manual/treatment.md
+          - 手術: manual/surgery.md
   - シーケンス図:
       - dev/index.md
       # sync-dev:begin

@@ -90,6 +90,51 @@ export async function fhirApi(page) {
   };
 }
 
+/**
+ * 患者のオーダーをまとめて消す(進捗などの Task・予約・オーダー本体)。化学療法の適用や実施済の処置のように、
+ * 画面から丸ごと消せないオーダーを撮影の前後に片付けるときに使う。受診歴などのオーダーを持たない撮影用の患者
+ * (見本 次郎・見本 太郎)にだけ使う(受診歴の処方を持つ見本 花子には使わない)。extra には、ほかに消す記録を
+ * [型, 消すものを選ぶ関数] で渡す(実施記録の Procedure など)。
+ */
+export async function removeOrdersOf(page, patientId, extra = []) {
+  const api = await fhirApi(page);
+  const targets = [
+    ["Task", () => true],
+    ["Appointment", () => true],
+    ...extra,
+    ["MedicationRequest", () => true],
+    ["ServiceRequest", () => true],
+  ];
+  for (const [type, match] of targets) {
+    const rows = (await api.search(type, { patient: patientId, _count: "500" })).filter(match);
+    for (const row of childrenFirst(rows)) {
+      if (type === "Appointment") await freeSlots(api, row);
+      await api.remove(type, row.id);
+    }
+  }
+}
+
+/** 同じ型の中で basedOn・partOf で親を指す記録を、親より先に並べる(親を先に消すと参照が残る)。 */
+function childrenFirst(rows) {
+  const parentOf = (row) =>
+    [...(row.basedOn ?? []), ...(row.partOf ?? [])].map((r) => r.reference?.split("/").pop()).filter(Boolean);
+  const depth = (row, seen = new Set()) => {
+    if (seen.has(row.id)) return 0;
+    seen.add(row.id);
+    const parents = rows.filter((r) => parentOf(row).includes(r.id));
+    return parents.length ? 1 + Math.max(...parents.map((p) => depth(p, seen))) : 0;
+  };
+  return [...rows].sort((a, b) => depth(b) - depth(a));
+}
+
+/** 予約を直接消す前に、予約が押さえていた枠を空きに戻す(予約を消しても枠は埋まったまま残る)。 */
+async function freeSlots(api, appointment) {
+  for (const { reference } of appointment.slot ?? []) {
+    const slot = await api.read(reference);
+    if (slot.status !== "free") await api.update({ ...slot, status: "free" });
+  }
+}
+
 /** 日付(YYYY-MM-DD)に日数を足す。 */
 export function addDays(date, days) {
   const [y, m, d] = date.split("-").map(Number);
