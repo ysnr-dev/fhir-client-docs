@@ -1,7 +1,8 @@
 // 操作マニュアル「処方オーダー」(docs/manual/prescription.md)
 // 患者「見本 花子」(撮影用の架空の患者。薬剤アレルギーにロキソプロフェンを登録してある)で撮る。
-// 撮影の前後に、この患者の処方をカルテから削除して、毎回同じ画面から始める。
-import { blur, deleteAllCards, labeled, menuItem, openKarte, pickRow } from "../lib/karte.mjs";
+// 撮影の前後に、この患者の撮影日の処方をカルテから削除して、毎回同じ画面から始める。
+import { blur, dayGroup, deleteAllCards, labeled, menuItem, openKarte, pickRow } from "../lib/karte.mjs";
+import { SHOOTING_DATE } from "../lib/session.mjs";
 
 const PATIENT = "見本 花子";
 const PRESCRIPTION_CARD = ".karte-card--prescription";
@@ -9,7 +10,9 @@ const PRESCRIPTION_CARD = ".karte-card--prescription";
 export default async function ({ page, login, mark, clearMarks, shot }) {
   await login("doctor");
   await openKarte(page, PATIENT);
-  await deleteAllCards(page, PRESCRIPTION_CARD);
+  // 撮影日の処方だけを消す(撮影用データの受診歴の処方は残す)。
+  const todaysCards = dayGroup(page, SHOOTING_DATE).locator(PRESCRIPTION_CARD);
+  await deleteAllCards(page, todaysCards);
 
   // 処方登録を開く
   const paneButton = page.locator(".karte-right").getByRole("button", { name: "処方", exact: true });
@@ -97,7 +100,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await shot("08-submit", { target: [rp, addRp, submitArea], padding: 40 });
   await clearMarks();
   await submit.click();
-  const card = page.locator(PRESCRIPTION_CARD).first();
+  const card = todaysCards.first();
   await card.waitFor();
   await shot("09-card", { target: card });
 

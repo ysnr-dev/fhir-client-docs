@@ -11,7 +11,7 @@ const SEARCH_PLACEHOLDER = "部分一致で検索(かな・全半角の違いは
 export default async function ({ page, login, mark, clearMarks, shot }) {
   await login("doctor");
   await openKarte(page, PATIENT);
-  await deleteAllCards(page, INJECTION_CARD);
+  await deleteAllCards(page, page.locator(INJECTION_CARD));
 
   // 注射登録を開く
   const paneButton = page.locator(".karte-right").getByRole("button", { name: "注射", exact: true });

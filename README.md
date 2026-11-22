@@ -43,9 +43,9 @@ cd ../fhir-client
 docker compose exec frontend npx vite build --config scripts/demo-seed.vite.config.ts
 cd frontend
 set -a; . ../../fhir-client-docs/.env; set +a
-DEMO_SEED_LOGIN=$SHOTS_DOCTOR_LOGIN DEMO_SEED_PASSWORD=$SHOTS_DOCTOR_PASSWORD \
-MANUAL_SHOTS_PASSWORD=$SHOTS_PHARMACIST_PASSWORD \
-  node scripts/dist/demo-seed.mjs --target dev --only manualShots
+node scripts/dist/demo-seed.mjs --target dev --only manualShots
 ```
 
-`MANUAL_SHOTS_PASSWORD` は撮影用の職員(薬剤師など)のログインのパスワードです。先に `.env` の `SHOTS_PHARMACIST_PASSWORD` に決めておきます。
+- 撮影用の職員(医師 四郎・薬剤 三郎など)のログインは、`.env` の `SHOTS_<役割>_LOGIN` と `SHOTS_<役割>_PASSWORD` で作ります。
+  パスワードは先に `.env` に決めておきます。
+- 流すときに聞かれるログインは、開発環境の医療従事者のアカウントなら誰でもかまいません(撮影の医師のアカウントがまだ無いときも流せます)。

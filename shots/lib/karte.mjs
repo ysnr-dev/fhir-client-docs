@@ -32,13 +32,18 @@ export async function blur(page) {
   await page.evaluate(() => document.activeElement?.blur());
 }
 
+/** カルテの時系列の、ある診療日(YYYY-MM-DD)のまとまり。 */
+export function dayGroup(page, day) {
+  return page.locator(".karte-group").filter({ has: page.locator(".karte-group__date", { hasText: day }) });
+}
+
 /**
- * カルテのカード(selector)を、カードの「⋮」の「削除」ですべて消す。撮影の前後に、毎回同じ画面から
- * 始めるために使う。連日の注射のように「この日以降」をまとめて消せるときは、そのボタンを押す。
+ * カルテのカード(cards)を、カードの「⋮」の「削除」ですべて消す。撮影の前後に、毎回同じ画面から
+ * 始めるために使う。撮影用データの受診歴を消さないよう、cards は撮影日のまとまり(dayGroup)などに絞って渡す。
+ * 連日の注射のように「この日以降」をまとめて消せるときは、そのボタンを押す。
  */
-export async function deleteAllCards(page, selector) {
+export async function deleteAllCards(page, cards) {
   await page.waitForLoadState("networkidle");
-  const cards = page.locator(selector);
   for (let remaining = await cards.count(); remaining > 0; remaining = await cards.count()) {
     await cards.first().getByRole("button", { name: /の操作$/ }).click();
     await menuItem(page, "削除").click();
@@ -46,10 +51,7 @@ export async function deleteAllCards(page, selector) {
     await modal.getByRole("combobox").fill("誤入力");
     await modal.getByRole("button", { name: /削除$/ }).last().click();
     await modal.waitFor({ state: "detached" });
-    await page.waitForFunction(
-      ({ selector, count }) => document.querySelectorAll(selector).length < count,
-      { selector, count: remaining },
-    );
+    await cards.nth(remaining - 1).waitFor({ state: "detached" });
   }
 }
 

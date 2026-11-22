@@ -102,6 +102,10 @@ nav:
       - manual/index.md
       - 共通:
           - ログイン: manual/login.md
+          - ホーム・掲示板: manual/home.md
+          - 患者検索とカルテを開く: manual/patient-search.md
+          - カルテ画面の見方: manual/karte.md
+          - 通知: manual/notifications.md
       - 医師:
           - 処方オーダー: manual/prescription.md
           - 注射オーダー: manual/injection.md
