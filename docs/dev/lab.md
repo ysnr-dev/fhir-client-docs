@@ -37,14 +37,19 @@
 | リソース | 要素 | 中身 |
 |---|---|---|
 | 明細 `ServiceRequest` | `code` ほか | オーダー時点のマスタの内容(項目コード・名称・JLAC・検体・採取管)を写す |
+| 明細 `ServiceRequest` | `performer` | 外注の項目だけ、外注先の `Organization`。院内は持たない |
+| ヘッダ `ServiceRequest` | `performer` | 明細の外注先を重複なしで写す(外注検査の画面が外注先で引くため) |
+| 管の Specimen | `identifier`(`lab-tube-destination`) | 外注の管の行き先(外注先の id)。院内の管は持たない |
+| 管の Specimen | 拡張 `lab-outsource-shipped-at`・`lab-outsource-shipment-recorder` | 外注先への提出の日時と記録した人 |
+| `Observation` | `performer` | 外注の項目だけ、外注先の `Organization`。院内は持たない |
 | 管の Specimen | `accessionIdentifier` | ラベル番号 |
 | 管の Specimen | `receivedTime` と `status: available` | 到着 |
 | 管の Specimen | 拡張 `lab-arrival-recorder` | 到着を記録した人 |
 | `DiagnosticReport` | `status` | 報告区分(`preliminary` / `final` / `corrected`) |
 | `DiagnosticReport` | `effectiveDateTime` | 採取日 |
 | `DiagnosticReport` | `issued` | 報告日時 |
-| 結果の Specimen | (参照するとき) | 材料の一致する管の Specimen を参照する。書き換えない |
-| 結果の Specimen | (作るとき) | 材料の一致する管が無いときと、紐付けの無い結果のとき。結果側が作って所有する |
+| 結果の Specimen | (参照するとき) | 材料と行き先の一致する管の Specimen を参照する。書き換えない |
+| 結果の Specimen | (作るとき) | 材料と行き先の一致する管が無いときと、紐付けの無い結果のとき。結果側が作って所有し、外注なら行き先の `identifier` を付ける |
 | 緊急異常値の通知 Task | `owner`・`priority` | 依頼医、`stat` |
 | 緊急異常値の通知 Task | `input` | パニック値の項目・値・判定 |
 | 検査結果確認の通知 Task | `owner` | 依頼医。最終報告と訂正報告のときだけ作る |
@@ -82,6 +87,8 @@
 | 到着確認 | `pages/LabArrivalPage.tsx` | `buildSpecimenArrival` / `buildSpecimenArrivalCancel`(`fhir/labSpecimenHelpers.ts`) | `useUpdateLabArrival`、`fetchLabelSpecimenByNumber` / `fetchLabArrivalContext` |
 | 結果登録・訂正・削除 | `components/LabResultEntryModal.tsx`(一覧)・`KarteLabResultTab.tsx`・`LabResultForm.tsx` | `buildLabResultBundle` / `buildLabResultUpdateBundle` / `buildLabResultDeleteBundle`(`fhir/labResultHelpers.ts`) | `useCreateLabResult` / `useUpdateLabResult` / `useDeleteLabResult`(`api/queries/labResult.ts`) |
 | 結果の通知 | 同上 | `fhir/labPanicHelpers.ts`・`fhir/resultReviewHelpers.ts` | 同上 |
+| 外注検査・提出 | `pages/LabOutsourcePage.tsx` | `labOutsourceTubes`(`fhir/labOutsourceHelpers.ts`)、`buildSpecimenShipment` / `buildSpecimenShipmentCancel`(`fhir/labSpecimenHelpers.ts`) | `useLabOutsourceWorklist` / `useUpdateLabShipment`(`api/queries/lab.ts`) |
+| 外注伝票 | `pages/LabOutsourceSlipPage.tsx`(印刷用の別タブ) | 同上 | `useLabOutsourceWorklist` |
 | 結果取込 | `pages/LabResultImportPage.tsx`・`LabResultImportDetailPage.tsx` | `fhir/labImportHelpers.ts`、`hooks/useLabImportGroupContext.ts`、backend の `LabImport::*` | `useCreateLabResult` / `useUpdateLabResult` |
 | 結果確認(通知から) | `pages/NotificationPage.tsx`(`components/notifications/notificationRegistry.tsx`) | `urgentConfirmationEntries`(`api/notificationActions.ts`) | `useMarkResultReviewed` |
 | 結果確認(カルテから) | `KarteLabResultTab.tsx` の `ResultReviewAction` | `buildReviewProvenance`(`fhir/provenanceHelpers.ts`) | `useMarkResultReviewed` |
@@ -216,7 +223,7 @@ sequenceDiagram
 | 一覧の検索 | 検査日 1 日ぶんの `ServiceRequest`・`Task`・`Specimen`・`DiagnosticReport`・患者 |
 | ラベルの PDF | `GET /reports/lab_labels/:order_id/pdf` |
 | backend の検索 | `ServiceRequest?_id` に、患者・明細・発行済みの管の Specimen を含める |
-| 管の Specimen の作成 | 未発行の管だけ。`If-None-Exist` を添える |
+| 管の Specimen の作成 | 未発行の管だけ。`If-None-Exist`(オーダー・検体・行き先)を添える。院内の管は `identifier:missing=true` |
 | `Task` `lab-exam` = `accepted` | 依頼済のときだけ |
 
 「ラベル一括発行」です。
@@ -297,7 +304,7 @@ sequenceDiagram
 | 番号の検証 | 11 桁で、末尾のチェックデジット(M10W3)が合うか |
 | 管の検索 | `Specimen?accession=番号`。無ければ「この番号の発行記録がありません」 |
 | オーダー一式の検索 | `ServiceRequest?_id` に、明細・`Task`・`Specimen`・患者を含める |
-| 揃ったかの判定 | オーダーの検体のどれにも、到着した管があるか。今回の管も数える |
+| 揃ったかの判定 | オーダーの管(検体と行き先の組)のどれにも、到着した管があるか。今回の管も数える |
 | PUT 管の Specimen | `receivedTime`・`status: available`・記録者 |
 | `Task` `lab-exam` = `completed` | 全部の管が揃い、`Task` が `accepted` のとき |
 
@@ -333,6 +340,37 @@ sequenceDiagram
 
 画面を開いたまま別の端末で状態が変わっていることがあるので、取消でも管と進捗を読み直します。
 
+## 外注の提出
+
+外注検査の画面で、選んだ管の提出を記録するときです。
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor Tech as 検査室
+  participant UI as ブラウザ
+  participant BE as backend
+  participant FHIR as 上流 FHIR
+
+  Tech->>UI: 外注検査を開く
+  UI->>BE: GET /fhir(外注先・検査日の期間)
+  BE->>FHIR: 検索
+  FHIR-->>UI: オーダー一式と結果の項目
+  UI->>UI: 外注の管ごとに状況を決める
+  Tech->>UI: 管を選んで「提出」
+  UI->>BE: POST /fhir(transaction)
+  BE->>FHIR: POST /
+  FHIR-->>UI: 結果
+```
+
+| 読む・書くもの | 条件 |
+|---|---|
+| 一覧の検索 | `ServiceRequest?performer=外注先`(「すべて」は検査委託先の id をカンマ OR)と `occurrence` の期間。明細・`Task`・管の `Specimen`・`DiagnosticReport` に加え、`_include:iterate=DiagnosticReport:result` で `Observation` を含める |
+| 状況の判定 | 管の `Specimen` が無ければラベル未発行、提出の拡張が無ければ提出待ち。その管を参照する確定した `Observation` があれば結果済、無ければ結果未着 |
+| PUT 管の Specimen × 選んだ管 | 提出の拡張(日時・記録した人)を足す。取消は拡張を外す |
+
+外注伝票は同じ検索を印刷用の別タブで行い、指定した外注先と提出日の管だけを並べます。
+
 ## 結果登録・訂正
 
 新規です。
@@ -364,7 +402,7 @@ sequenceDiagram
 | 管の検索 | `Specimen:request` でオーダーの管を引く |
 | `DiagnosticReport` | `status`・`issued`・`performer` |
 | `Observation` × 項目 | `referenceRange`・`interpretation`・`method` |
-| 結果の Specimen | 材料の一致する管があれば参照し、無ければ作る |
+| 結果の Specimen | 材料と行き先の一致する管があれば参照し、無ければ作る |
 | `Task` `lab-panic`(依頼医) | パニック値があるとき。報告区分によらない |
 | `Task` `result-review`(依頼医) | 最終報告で、未確認の緊急異常値の通知が無いとき |
 
@@ -452,6 +490,7 @@ sequenceDiagram
 | 候補 | ORC・OBR 群 1 件が結果 1 件 |
 | 行の状態 | 保留 / 登録待ち / 対象外 |
 | 同じメッセージ ID | 詳細画面で知らせるが、取込は止めない(訂正版が同じ ID で来ることがあるため) |
+| 外注先 | 取込の画面で選んだ外注先をバッチに持つ。登録する `Observation` の `performer` になる |
 
 候補ごとの登録です。
 

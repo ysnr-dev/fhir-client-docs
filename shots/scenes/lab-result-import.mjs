@@ -61,7 +61,8 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await blur(page);
   await mark(form.locator("label").filter({ hasText: "取込ファイル" }), { label: 1, place: "corner" });
   await mark(form.locator("label").filter({ hasText: "文字コード" }), { label: 2, place: "corner" });
-  await mark(form.getByRole("button", { name: "取込実行" }), { label: 3, place: "corner" });
+  await mark(form.locator("label").filter({ hasText: "外注先" }), { label: 3, place: "corner" });
+  await mark(form.getByRole("button", { name: "取込実行" }), { label: 4, place: "corner" });
   await shot("01-upload", { target: [page.locator(".page__header"), form], padding: 32 });
   await clearMarks();
   await form.getByRole("button", { name: "取込実行" }).click();

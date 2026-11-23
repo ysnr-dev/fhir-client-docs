@@ -166,6 +166,7 @@ nav:
           - 検体検査一覧とラベル: manual/lab-worklist.md
           - 検体到着確認: manual/lab-arrival.md
           - 検査結果取込: manual/lab-result-import.md
+          - 外注検査: manual/lab-outsource.md
           - 細菌検査一覧: manual/micro-worklist.md
           - 病理(受付・レポート): manual/patho-worklist.md
           - 輸血一覧: manual/transfusion-worklist.md

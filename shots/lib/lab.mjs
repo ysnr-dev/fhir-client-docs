@@ -34,8 +34,11 @@ export async function openLabKarte(page, patientName) {
   await page.waitForLoadState("networkidle");
 }
 
-/** 開いているカルテから、撮影日の検体検査を登録する。items は検査伝票のチェックボックスの名前。 */
-export async function registerLabOrder(page, items) {
+/**
+ * 開いているカルテから、撮影日の検体検査を登録する。items は検査伝票のチェックボックスの名前。
+ * tab を渡すと、その伝票のタブに切り替えてから選ぶ(既定は最初の伝票)。
+ */
+export async function registerLabOrder(page, items, { tab } = {}) {
   const pane = page.locator(".karte-right");
   await pane.getByRole("button", { name: "検体検査", exact: true }).click();
   const form = pane.locator(".prescription-form");
@@ -43,6 +46,11 @@ export async function registerLabOrder(page, items) {
   await common.waitFor();
   await page.waitForLoadState("networkidle");
   await labeled(common, "対象プロブレム").locator("select").selectOption({ index: 1 });
+  if (tab) {
+    await form.getByRole("tab", { name: tab }).click();
+    await form.getByRole("checkbox", { name: items[0], exact: true }).first().waitFor();
+    await page.waitForLoadState("networkidle");
+  }
   for (const name of items) await form.getByRole("checkbox", { name, exact: true }).first().check();
   await blur(page);
   await form.locator(".prescription-form__submit").getByRole("button", { name: "登録", exact: true }).click();
