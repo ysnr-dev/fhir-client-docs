@@ -1,4 +1,4 @@
-// 操作マニュアル「処方オーダー」(docs/manual/prescription.md)
+// 操作マニュアル「処方」(docs/manual/prescription.md)
 // 患者「見本 花子」(撮影用の架空の患者。薬剤アレルギーにロキソプロフェンを登録してある)で撮る。
 // 撮影の前後に、この患者の撮影日の処方をカルテから削除して、毎回同じ画面から始める。
 import { blur, dayGroup, deleteAllCards, labeled, menuItem, openKarte, pickRow } from "../lib/karte.mjs";

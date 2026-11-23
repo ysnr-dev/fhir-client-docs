@@ -117,8 +117,8 @@ nav:
           - アレルギー・注意: manual/allergy-caution.md
           - オーダーセット: manual/order-set.md
           - 代行入力とカルテ承認: manual/proxy-countersign.md
-          - 処方オーダー: manual/prescription.md
-          - 注射オーダー: manual/injection.md
+          - 処方: manual/prescription.md
+          - 注射: manual/injection.md
           - 化学療法: manual/chemotherapy.md
           - 検体検査: manual/lab.md
           - 細菌検査: manual/micro.md
@@ -155,28 +155,28 @@ nav:
           - 血糖インスリン: manual/nursing-insulin.md
       - 薬剤部:
           - 処方監査: manual/rx-verification.md
-          - 処方一覧と調剤: manual/rx-worklist.md
-          - 注射一覧と払出: manual/injection-worklist.md
+          - 処方一覧: manual/rx-worklist.md
+          - 注射一覧: manual/injection-worklist.md
           - 疑義照会: manual/rx-inquiry.md
           - 持参薬鑑別: manual/brought-medication.md
           - 服薬指導: manual/medication-guidance.md
           - ロット管理: manual/lot-management.md
           - 抗菌薬適正使用: manual/ast.md
       - 臨床検査:
-          - 検体検査一覧とラベル: manual/lab-worklist.md
+          - 検体検査一覧: manual/lab-worklist.md
           - 検体到着確認: manual/lab-arrival.md
           - 検査結果取込: manual/lab-result-import.md
           - 外注検査: manual/lab-outsource.md
           - 細菌検査一覧: manual/micro-worklist.md
-          - 病理(受付・レポート): manual/patho-worklist.md
+          - 病理検査一覧: manual/patho-worklist.md
           - 輸血一覧: manual/transfusion-worklist.md
       - 放射線:
-          - 放射線検査(実施入力・読影レポート): manual/rad-worklist.md
+          - 放射線検査一覧: manual/rad-worklist.md
           - 放射線治療カレンダー: manual/radiotherapy-calendar.md
       - 検査・処置:
-          - 生理検査・内視鏡・処置の一覧: manual/exam-worklists.md
+          - 生理検査一覧・内視鏡一覧・処置一覧: manual/exam-worklists.md
       - 手術:
-          - 手術(一覧・カレンダー): manual/surgery-worklist.md
+          - 手術一覧・手術カレンダー: manual/surgery-worklist.md
           - 麻酔チャート・術前診察: manual/anesthesia.md
       - 各部門:
           - リハビリ一覧: manual/rehab-worklist.md

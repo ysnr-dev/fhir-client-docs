@@ -1,4 +1,4 @@
-// 操作マニュアル「処方一覧と調剤」(docs/manual/rx-worklist.md)
+// 操作マニュアル「処方一覧」(docs/manual/rx-worklist.md)
 // 医師 四郎が入院中の「見本 太郎」(撮影用の架空の患者)に定期処方を出し、薬剤 三郎が処方一覧で処方箋を発行して
 // 調剤登録する。撮影の前後に、見本 太郎のオーダーと調剤の記録を消す。
 import { blur, logout, menuItem } from "../lib/karte.mjs";

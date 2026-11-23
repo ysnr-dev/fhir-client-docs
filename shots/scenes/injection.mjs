@@ -1,4 +1,4 @@
-// 操作マニュアル「注射オーダー」(docs/manual/injection.md)
+// 操作マニュアル「注射」(docs/manual/injection.md)
 // 患者「見本 花子」(撮影用の架空の患者)で、今日から 3 日間の連日の点滴を登録して撮る。
 // 撮影の前後に、この患者の注射をカルテから削除して、毎回同じ画面から始める。
 import { addDays, blur, deleteAllCards, labeled, menuItem, openKarte, pickRow } from "../lib/karte.mjs";
