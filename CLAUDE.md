@@ -84,6 +84,7 @@ manual-plan.md        操作マニュアルの作成計画と進み具合(公開
   指示受け済みの看護指示 7 件(体温・脈拍数・血圧・SpO2 は 6/14/20 時、血糖値は 7:30/11:30/17:30/21 時、口腔清拭は 8:30/12:30/18:30、
   安静度は自由記載)と抗菌薬の点滴(1 日 2 回 10 時・22 時、7 日間)を持ち、入院日から撮影日の 8 時前までの実施を記録してある。
   撮影日からは血糖スケールのインスリン(ヒューマリンR、毎食前 7:30・11:30・17:30)も出ている)、医師 四郎の予約枠「内科 午前」(平日 9〜12 時・15 分枠、撮影日から 8 週)、開発環境の部門の枠表(CT 枠・生理検査枠・リハビリ室・栄養相談室など。撮影日から 4 週の枠を足す)、医師 四郎(撮影の医師、ログイン `shiro`)、研修 五郎(研修医、ログイン `goro`。指導医グループ「見本 内科研修」で医師 四郎が指導医)、
+  事務 梅子(医師事務作業補助者、ログイン `jimu`、役割 `clerk`。診療記録の代行入力の写真に使う)、
   薬剤 三郎(薬剤師、ログイン `pharma`)、看護 次郎(看護師、ログイン `nurse2`。開発環境にもとからいる看護師で、撮影用データはログインのパスワードを `.env` に合わせるだけ)、
   看護 夏子(看護サマリーを承認する看護師、ログイン `natsuko`、役割 `headNurse`)、
   検査 春子(臨床検査技師、ログイン `labtech`、役割 `labTech`)、病理 六郎(病理医、ログイン `patho`、役割 `pathologist`)、
@@ -124,7 +125,7 @@ manual-plan.md        操作マニュアルの作成計画と進み具合(公開
   カルテのカードを消すときは、撮影用データの受診歴を消さないよう `dayGroup(page, SHOOTING_DATE)` で撮影日のカードに絞る。
   患者検索は開いた直後に全患者を並べるので、検索する前の一覧は撮らない。
   部門の画面は、医師のアカウントでオーダーを出してから部門のアカウントで撮る。
-- 撮影のアカウントは役割ごと(doctor / resident / nurse / headNurse / pharmacist / labTech / pathologist / radTech / radiologist / anesthesiologist / therapist / clinicalEngineer / dietitian / liaison)に `.env` に書く(`.env.example` 参照、`.env` は git 管理外)。
+- 撮影のアカウントは役割ごと(doctor / resident / clerk / nurse / headNurse / pharmacist / labTech / pathologist / radTech / radiologist / anesthesiologist / therapist / clinicalEngineer / dietitian / liaison)に `.env` に書く(`.env.example` 参照、`.env` は git 管理外)。
   1 つのシーンで役割を替えるときは、`lib/karte.mjs` の `logout` でログアウトしてからログインする(Cookie を消して開き直し、ログイン画面になるまで確かめる)。
 - 画面に削除の操作が無い記録(取り消した予約・入院予定・注意など)は、シーンの前後に `lib/karte.mjs` の `fhirApi` で直接消す。
 - 写真は手で加工しない。直すときはシーンを直して撮り直す。画面が変わったら、そのページのシーンを流し直す(全部なら `all`)。

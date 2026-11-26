@@ -17,7 +17,7 @@ const CLIP_PADDING = 16;
 const BASE_URL = process.env.SHOTS_BASE_URL || "http://localhost:5173";
 const IMAGE_ROOT = new URL("../../docs/manual/img/", import.meta.url);
 
-const ROLES = { doctor: "DOCTOR", resident: "RESIDENT", nurse: "NURSE", headNurse: "HEAD_NURSE", pharmacist: "PHARMACIST", labTech: "LAB_TECH", pathologist: "PATHOLOGIST", radTech: "RAD_TECH", radiologist: "RADIOLOGIST", anesthesiologist: "ANESTHESIOLOGIST", therapist: "THERAPIST", clinicalEngineer: "CLINICAL_ENGINEER", dietitian: "DIETITIAN", liaison: "LIAISON" };
+const ROLES = { doctor: "DOCTOR", resident: "RESIDENT", clerk: "CLERK", nurse: "NURSE", headNurse: "HEAD_NURSE", pharmacist: "PHARMACIST", labTech: "LAB_TECH", pathologist: "PATHOLOGIST", radTech: "RAD_TECH", radiologist: "RADIOLOGIST", anesthesiologist: "ANESTHESIOLOGIST", therapist: "THERAPIST", clinicalEngineer: "CLINICAL_ENGINEER", dietitian: "DIETITIAN", liaison: "LIAISON" };
 
 export async function createSession(browser, scene) {
   const context = await browser.newContext({
