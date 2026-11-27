@@ -29,10 +29,12 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await mark(context, { label: 1, place: "corner" });
   await shot("01-context", { target: context, padding: 40 });
   await clearMarks();
+  // 開いたメニューの医師の列には開発環境の実在の人名が並ぶので、メニューは撮らない。
   await context.locator(".order-context__trigger").click();
-  await context.getByRole("button", { name: "内科", exact: true }).click();
-  await context.getByRole("button", { name: DOCTOR, exact: true }).click();
-  await context.locator(".order-context__menu").waitFor({ state: "detached" });
+  const pickerMenu = context.locator(".order-context__menu");
+  await pickerMenu.getByRole("button", { name: "内科", exact: true }).click();
+  await pickerMenu.locator(".order-context__column").nth(1).getByRole("button", { name: DOCTOR, exact: true }).click();
+  await pickerMenu.waitFor({ state: "detached" });
   await mark(context, { label: 1, place: "corner" });
   await shot("02-context-set", { target: context, padding: 40 });
   await clearMarks();
@@ -59,7 +61,11 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await modal.waitFor({ state: "detached" });
   await rp.locator(".rp-card__dose-count-input").fill("28");
   await form.getByRole("button", { name: "登録", exact: true }).click();
-  await cards(".karte-card--prescription").first().waitFor();
+  const proxyRxCard = cards(".karte-card--prescription").first();
+  await proxyRxCard.locator(".karte-card__meta", { hasText: "代行入力" }).waitFor();
+  await mark(proxyRxCard.locator(".karte-card__meta"), { label: 1, place: "corner" });
+  await shot("03-proxy-order", { target: proxyRxCard, padding: 16 });
+  await clearMarks();
   await logout(page);
 
   // 医師が承認する
@@ -75,12 +81,12 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   const approvalRow = modal.locator("dt", { hasText: /^承認$/ });
   await mark(enteredBy.locator("xpath=following-sibling::dd[1]"), { label: 1, place: "corner" });
   await mark(approve, { label: 2, place: "corner" });
-  await shot("03-approve", { target: [enteredBy, approve, enteredBy.locator("xpath=following-sibling::dd[1]")], padding: 48 });
+  await shot("04-approve", { target: [enteredBy, approve, enteredBy.locator("xpath=following-sibling::dd[1]")], padding: 48 });
   await clearMarks();
   await approve.click();
   await approve.waitFor({ state: "detached" });
   await mark(approvalRow.locator("xpath=following-sibling::dd[1]"), { label: 1, place: "corner" });
-  await shot("04-approved", { target: [enteredBy, approvalRow.locator("xpath=following-sibling::dd[1]")], padding: 48 });
+  await shot("05-approved", { target: [enteredBy, approvalRow.locator("xpath=following-sibling::dd[1]")], padding: 48 });
   await clearMarks();
   await page.keyboard.press("Escape");
   await logout(page);
@@ -91,7 +97,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await context.locator(".order-context__trigger").click();
   const contextMenu = context.locator(".order-context__menu");
   await contextMenu.getByRole("button", { name: "内科", exact: true }).click();
-  await contextMenu.getByRole("button", { name: DOCTOR, exact: true }).click();
+  await contextMenu.locator(".order-context__column").nth(1).getByRole("button", { name: DOCTOR, exact: true }).click();
   await context.locator(".order-context__menu").waitFor({ state: "detached" });
   await right.getByRole("button", { name: "診療記録", exact: true }).click();
   let editors = right.locator(".ProseMirror");
@@ -110,7 +116,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await page.waitForLoadState("networkidle");
   await mark(noteCard.getByText("承認待ち"), { label: 1, place: "corner" });
   await mark(noteCard.locator(".karte-card__meta"), { label: 2, place: "corner" });
-  await shot("05-proxy-note", { target: noteCard, padding: 16 });
+  await shot("06-proxy-note", { target: noteCard, padding: 16 });
   await clearMarks();
   await logout(page);
 
@@ -129,7 +135,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await mark(enterer, { label: 1, place: "corner" });
   await mark(panel.getByRole("button", { name: "承認", exact: true }), { label: 2, place: "corner" });
   await mark(panel.getByRole("button", { name: "差戻し", exact: true }), { label: 3, place: "corner" });
-  await shot("06-proxy-note-approve", { target: panel, padding: 24 });
+  await shot("07-proxy-note-approve", { target: panel, padding: 24 });
   await clearMarks();
   await panel.getByRole("button", { name: "承認", exact: true }).click();
   await panel.getByText("承認済").first().waitFor();
@@ -158,7 +164,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await page.waitForLoadState("networkidle");
   const pendingBadge = noteCard.getByText("承認待ち");
   await mark(pendingBadge, { label: 1, place: "corner" });
-  await shot("07-resident-note", { target: noteCard, padding: 16 });
+  await shot("08-resident-note", { target: noteCard, padding: 16 });
   await clearMarks();
   await logout(page);
 
@@ -172,7 +178,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await mark(filters, { label: 1, place: "corner" });
   await mark(row.getByRole("button", { name: "開く" }), { label: 2, place: "corner" });
   await mark(row.getByRole("link", { name: "カルテ" }), { label: 3, place: "corner" });
-  await shot("08-list", { target: [page.locator("h1"), page.locator("table")], padding: 24 });
+  await shot("09-list", { target: [page.locator("h1"), page.locator("table")], padding: 24 });
   await clearMarks();
   await row.getByRole("button", { name: "開く" }).click();
   modal = page.locator(".modal").last();
@@ -181,7 +187,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await mark(panel.getByRole("button", { name: "承認", exact: true }), { label: 1, place: "corner" });
   await mark(panel.getByRole("button", { name: "差戻し", exact: true }), { label: 2, place: "corner" });
   await mark(panel.getByLabel("コメント"), { label: 3, place: "corner" });
-  await shot("09-countersign", { target: panel, padding: 24 });
+  await shot("10-countersign", { target: panel, padding: 24 });
   await clearMarks();
   await panel.getByRole("button", { name: "承認", exact: true }).click();
   await panel.getByText("承認済").first().waitFor();
