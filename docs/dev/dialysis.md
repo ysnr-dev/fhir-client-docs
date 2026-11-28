@@ -234,7 +234,7 @@
 | 血液浄化器の行 | `fhir/bloodPurifierHelpers.ts` |
 | 経過表の器 | `fhir/timeSeriesChartHelpers.ts`、`components/timeSeriesChart/` |
 | 透析経過表の経路 | `/dialysis-sessions/:sessionId/chart`、印刷は `/dialysis-chart-print/:sessionId` |
-| 患者メモの雛形 | `docs/report-mappings/dialysis-memo-01.questionnaire.json` |
+| 患者メモの雛形 | `backend/db/seed_data/templates/dialysis-memo-01.questionnaire.json` |
 | 血液浄化器のマスタ | `pages/BloodPurifierPage.tsx`(`/blood-purifiers`)、backend `master/blood_purifiers` |
 | 施設設定 | `dialysis_shifts` / `dialysis_lab_items` / `receipt_codes.dialysis`(`backend/app/models/facility_settings.rb`) |
 

@@ -51,10 +51,11 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   await mark(labeled(xrayFrame, "撮影時刻"), { label: 3, place: "corner" });
   await mark(xrayFrame.locator(".rad-order-frame__undated"), { label: 4, place: "corner" });
   await mark(xrayFrame.locator(".rad-gp__head"), { label: 5 });
-  await mark(labeled(xrayFrame, "依頼病名"), { label: 6 });
-  await mark(labeled(xrayFrame, "検査目的"), { label: 7 });
-  await mark(labeled(xrayFrame, "特別指示"), { label: 8 });
-  await mark(xrayFrame.locator(".rad-order-frame__perform"), { label: 9 });
+  await mark(xrayFrame.locator(".rad-gp__flags"), { label: 6 });
+  await mark(labeled(xrayFrame, "依頼病名"), { label: 7 });
+  await mark(labeled(xrayFrame, "検査目的"), { label: 8 });
+  await mark(labeled(xrayFrame, "特別指示"), { label: 9 });
+  await mark(xrayFrame.locator(".rad-order-frame__perform"), { label: 10 });
   await shot("03-frame", { target: xrayFrame, padding: 40 });
   await clearMarks();
 
@@ -111,7 +112,7 @@ export default async function ({ page, login, mark, clearMarks, shot }) {
   // 登録した放射線検査の操作
   const card = cards.filter({ hasText: "CT" }).first();
   await card.getByRole("button", { name: /の操作$/ }).click();
-  const menu = page.locator(".row-menu__popover, [role=menu]").last();
+  const menu = page.locator(".row-menu__items").last();
   await menu.waitFor();
   await mark(card.getByRole("button", { name: /^DO/ }), { label: 1 });
   await mark(menuItem(page, "編集"), { label: 2 });

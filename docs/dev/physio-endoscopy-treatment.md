@@ -88,10 +88,10 @@
 | 部品 | 生理検査 | 内視鏡 | 処置 |
 |---|---|---|---|
 | フォーム | `components/PhysioOrderForm.tsx`・`PhysioOrderPanels.tsx` | `EndoscopyOrderForm.tsx`・`EndoscopyOrderPanels.tsx` | `TreatmentOrderForm.tsx`・`TreatmentOrderPanels.tsx` |
-| オーダーの組み立て | `fhir/physioOrderHelpers.ts` | `fhir/endoscopyOrderHelpers.ts` | `fhir/treatmentOrderHelpers.ts` |
-| 実施記録の組み立て | `fhir/physioResultHelpers.ts` | `fhir/endoscopyResultHelpers.ts` | `fhir/treatmentResultHelpers.ts` |
+| オーダーの組み立て | `fhir/physioOrderHelpers.ts` → `examOrderHelpers.ts` | `fhir/endoscopyOrderHelpers.ts` → `examOrderHelpers.ts` | `fhir/treatmentOrderHelpers.ts` |
+| 実施記録の組み立て | `fhir/physioResultHelpers.ts` → `examResultHelpers.ts` | `fhir/endoscopyResultHelpers.ts` → `examResultHelpers.ts` | `fhir/treatmentResultHelpers.ts` → `examResultHelpers.ts` |
 | 部門一覧 | `pages/PhysioWorklistPage.tsx` → `ExamWorklistPage.tsx` | `pages/EndoscopyWorklistPage.tsx` → `ExamWorklistPage.tsx` | `pages/TreatmentWorklistPage.tsx` |
-| 実施入力 | `components/PhysioPerformModal.tsx` | `EndoscopyPerformModal.tsx` | `TreatmentPerformModal.tsx` |
+| 実施入力 | `components/PhysioPerformModal.tsx` → `ExamPerformInputModal.tsx` | `EndoscopyPerformModal.tsx` → `ExamPerformInputModal.tsx` | `TreatmentPerformModal.tsx` → `ExamPerformInputModal.tsx` |
 | 警告 | `useInfectionAdvisory`・`useAdvisoryRuleAdvisories(…, "physio")` | 同じ hook(`"endoscopy"`) | なし |
 
 | 操作 | 組み立て | hook |
